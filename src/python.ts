@@ -28,7 +28,7 @@ function isReconciled(value: unknown): value is Reconciled {
 /** One Python process judges any number of evidence objects; its output is validated before use. */
 export function reconcileMany(evidence: Evidence[]): Reconciled[] {
   if (evidence.length === 0) return [];
-  const result = spawnSync(pythonCommand(), [path.join(ROOT, 'python/reconcile.py')], {
+  const result = spawnSync(/* turbopackIgnore: true */ pythonCommand(), [path.join(ROOT, 'python/reconcile.py')], {
     input: JSON.stringify(evidence), encoding: 'utf8', timeout: 20000, maxBuffer: 32 * 1024 * 1024,
     env: { ...process.env, PYTHONIOENCODING: 'utf-8', PYTHONUTF8: '1' },
   });

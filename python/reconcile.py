@@ -25,11 +25,16 @@ def _n(value):
     return f'{value:,}'
 
 
-def _check(code, week, passed, blocking, title, detail, action=None, report_ids=()):
+def _check(code, week, passed, blocking, title, detail, action=None, report_ids=(), client=None):
+    """`detail` is for the reviewer and names internal reports; `client` is the same limitation
+    worded for the client report."""
     check = {'code': code, 'week': week, 'passed': passed, 'blocking': blocking,
              'title': title, 'detail': detail, 'reportIds': [r for r in report_ids if r]}
-    if action and not passed:
-        check['action'] = action
+    if not passed:
+        if action:
+            check['action'] = action
+        if client:
+            check['clientNote'] = client
     return check
 
 
@@ -54,7 +59,8 @@ def reconcile_week(week, label):
             'report_available', label, False, True, f'No report for the {name}',
             f'No subscription report for {span} was available at the evaluation time. '
             'Missing data is unknown, not zero.',
-            action=f'Import the publisher report for {span}, then reopen this review.'))
+            action=f'Import the publisher report for {span}, then reopen this review.',
+            client=f'No subscription report for {span} was available when this report was prepared.'))
         return checks, None, False, None
 
     # 1. Which report: ours must be the one the publisher itself lists as current.
@@ -64,6 +70,7 @@ def reconcile_week(week, label):
             f'The publisher export has no report for {span}, so the imported figure of '
             f"{_n(selected['loadedActiveSubscriptions'])} cannot be verified.",
             action=f'Download the publisher export covering {span}, then reopen this review.',
+            client=f"The figure for {span} could not be confirmed against the publisher's current report.",
             report_ids=[selected['reportId']]))
     elif not selected:
         checks.append(_check(
@@ -71,6 +78,7 @@ def reconcile_week(week, label):
             f"The publisher lists {publisher['publisherReportId']} as current for {span}, "
             'but no report for this week has been imported.',
             action=f"Import {publisher['publisherReportId']}, then reopen this review.",
+            client=f"The figure for {span} could not be confirmed against the publisher's current report.",
             report_ids=[publisher['publisherReportId']]))
     elif selected['publisherReportId'] != publisher['publisherReportId']:
         checks.append(_check(
@@ -78,6 +86,7 @@ def reconcile_week(week, label):
             f"Our import selects {selected['publisherReportId']}, but the publisher lists "
             f"{publisher['publisherReportId']} as current for {span}.",
             action=f"Import {publisher['publisherReportId']}, then reopen this review.",
+            client=f"The figure for {span} could not be confirmed against the publisher's current report.",
             report_ids=[selected['reportId'], publisher['publisherReportId']]))
     else:
         checks.append(_check(
@@ -103,6 +112,8 @@ def reconcile_week(week, label):
             f'week to {_day(expected_end)}. Its {_n(verified)} is a snapshot through {_day(through)}, '
             'not a comparable weekly figure.',
             action=f"Wait for the publisher's complete report for {span}, then reopen this review.",
+            client=f"The publisher's latest report covers {_day(start)} to {_day(through)} only. A full-week figure "
+                   f'for {span} is not yet available, so no week-over-week comparison is made.',
             report_ids=[source_id]))
 
     # 3. Load: what we stored must equal the control totals in the report header.
@@ -114,6 +125,7 @@ def reconcile_week(week, label):
             f"{_n(publisher['activeSubscriptions'])} subscriptions but lists {_n(publisher['offersListed'])} "
             f"offers totalling {_n(publisher['offersTotal'])}.",
             action='Download the publisher export again and reopen this review.',
+            client=f"The publisher's export for {span} is internally inconsistent and is being re-requested.",
             report_ids=[publisher['publisherReportId']]))
     if selected:
         loaded_offers, loaded_total = selected['loadedOfferCount'], selected['loadedActiveSubscriptions']
@@ -135,6 +147,8 @@ def reconcile_week(week, label):
                 f'{_n(loaded_total)} of {_n(expected_total)} subscriptions: {missing}, although the import '
                 'was recorded as successful.',
                 action=f"Ask for {selected['publisherReportId']} to be re-imported, then reopen this review.",
+                client=f"Our internal copy of the publisher's report for {span} is incomplete and is being reloaded. "
+                       "Figures in this report are the publisher's own totals.",
                 report_ids=[selected['reportId']]))
 
     # 4. Was the figure in the shipped mart right? Informational: the review reports the source figure.
@@ -198,6 +212,7 @@ def reconcile(evidence):
             f'The current import is {age_hours:.0f} hours old at the evaluation time; the limit is '
             f'{MAX_IMPORT_AGE_HOURS} hours.',
             action='Run the import again, then reopen this review.',
+            client=f'The latest data import is more than {MAX_IMPORT_AGE_HOURS} hours old and is being refreshed.',
             report_ids=[selected['reportId']] if selected else []))
 
     now, before = current['verifiedActiveSubscriptions'], previous['verifiedActiveSubscriptions']
@@ -206,7 +221,8 @@ def reconcile(evidence):
     growth = pct_change(now, before) if comparable else None
     if comparable and growth is None:
         checks.append(_check('baseline', 'previous', False, True, 'No baseline for a percentage',
-                             'Percentage change is undefined when the comparison week is zero or unavailable.'))
+                             'Percentage change is undefined when the comparison week is zero or unavailable.',
+                             client='The week before has no subscriptions to compare against, so no percentage change is stated.'))
 
     evidence['activeSubscriptions'] = now
     evidence['previousSubscriptions'] = before

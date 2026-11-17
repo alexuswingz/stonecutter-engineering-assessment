@@ -1,6 +1,6 @@
 import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
-import { ROOT } from './database.ts';
+import { DATA_DIR } from './database.ts';
 import type { PublisherSnapshot, ReportStatus } from './types.ts';
 
 /** Publisher exports (data/exports): the publisher's own records, independent of our ingestion.
@@ -10,7 +10,7 @@ export interface PublisherReport extends PublisherSnapshot {
 }
 export interface PublisherExports { directory: string; reports: Map<string, PublisherReport> }
 
-export const EXPORTS_DIR = process.env.EXPORTS_DIR ?? path.join(ROOT, 'data', 'exports');
+export const EXPORTS_DIR = process.env.EXPORTS_DIR ? path.resolve(process.env.EXPORTS_DIR) : path.join(DATA_DIR, 'exports');
 
 async function readCsv(file: string, required: string[]): Promise<Record<string, string>[]> {
   let text: string;
@@ -33,7 +33,7 @@ export async function loadExports(directory = EXPORTS_DIR): Promise<PublisherExp
   const reportsFile = path.join(directory, 'subscription_reports.csv');
   const offersFile = path.join(directory, 'subscription_offers.csv');
   const stamp = (await Promise.all([reportsFile, offersFile].map(async file => {
-    try { const info = await stat(file); return `${info.mtimeMs}:${info.size}`; } catch { return 'missing'; }
+    try { const info = await stat(/* turbopackIgnore: true */ file); return `${info.mtimeMs}:${info.size}`; } catch { return 'missing'; }
   }))).join('|');
   const cached = cache.get(directory);
   if (cached?.stamp === stamp) return cached.exports;

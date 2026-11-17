@@ -18,7 +18,8 @@
     "typecheck": "tsc --noEmit",
     "test:ts": "node --import tsx --test tests/*.test.ts",
     "test:python": "node --import tsx scripts/python.ts test",
-    "setup": "node --import tsx scripts/python.ts setup"
+    "setup": "node --import tsx scripts/python.ts setup",
+    "evidence:change": "node --import tsx scripts/changed-evidence.ts"
   },
   "dependencies": {
     "@electric-sql/pglite": "0.5.9",

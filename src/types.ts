@@ -70,6 +70,8 @@ export interface Check {
   title: string; detail: string;
   /** What to do about a failure. */
   action?: string;
+  /** The same limitation worded for the client report (failures only). */
+  clientNote?: string;
   reportIds: string[];
 }
 export interface Quality { status: 'ready' | 'insufficient'; reasons: string[]; checks: Check[] }

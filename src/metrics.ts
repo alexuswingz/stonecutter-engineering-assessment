@@ -84,8 +84,11 @@ async function weekEvidence(db: PGlite, selection: string, exports: PublisherExp
 export async function getEvidence(db: PGlite, brandId: string, marketplace = 'US', exports?: PublisherExports): Promise<Evidence> {
   const [brand] = await queryRows<{ name: string }>(db, 'SELECT name FROM brands WHERE brand_id = $1', [brandId]);
   if (!brand) throw new Error(`Unknown brand: ${brandId}. Query SELECT * FROM brands to see valid IDs.`);
-  const scopes = (await listScopes(db)).filter(scope => scope.brandId === brandId);
-  if (!scopes.some(scope => scope.marketplace === marketplace)) {
+  const [{ known }] = await queryRows<{ known: boolean }>(db, `
+    SELECT EXISTS (SELECT 1 FROM raw.subscription_reports WHERE brand_id = $1 AND marketplace = $2)
+        OR EXISTS (SELECT 1 FROM raw.sales_daily WHERE brand_id = $1 AND marketplace = $2) AS known`, [brandId, marketplace]);
+  if (!known) {
+    const scopes = (await listScopes(db)).filter(scope => scope.brandId === brandId);
     throw new Error(`Unknown marketplace for ${brandId}: ${marketplace}. Available: ${scopes.map(scope => scope.marketplace).join(', ') || 'none'}.`);
   }
   const selection = await readFile(path.join(ROOT, 'sql', 'select-reports.sql'), 'utf8');

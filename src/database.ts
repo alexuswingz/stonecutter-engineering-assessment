@@ -4,6 +4,9 @@ import path from 'node:path';
 
 // Project root. Commands run from the project directory; a bundler may relocate this module, so do not derive it from import.meta.url.
 export const ROOT = process.env.ASSESSMENT_ROOT ?? process.cwd();
+// Source data directory (snapshot, exports, notes). Point DATA_DIR at another dataset with the same schema to review it.
+export const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(ROOT, 'data');
+export const SNAPSHOT_FILE = path.join(DATA_DIR, 'marketplace.pglite');
 export const AS_OF = '2026-10-06T12:00:00Z';
 export const PERIOD_START = '2026-09-28';
 export const PERIOD_END = '2026-10-04';
@@ -18,7 +21,7 @@ export async function openDatabase(memory = false, runtime = path.join(ROOT, '.r
       if (!(error instanceof Error) || !('code' in error) || error.code !== 'ENOENT') throw error;
     }
   }
-  const snapshot = initialized ? undefined : await readFile(path.join(ROOT, 'data', 'marketplace.pglite'));
+  const snapshot = initialized ? undefined : await readFile(SNAPSHOT_FILE);
   const db = new PGlite({
     ...(memory ? {} : { dataDir: runtime }),
     ...(snapshot ? { loadDataDir: new Blob([new Uint8Array(snapshot)]) } : {}),

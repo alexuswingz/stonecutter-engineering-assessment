@@ -58,7 +58,7 @@ test('a saved decision survives a restart and the case reopens with its evidence
       assert.equal(evidence.activeSubscriptions, reopened.evidence.activeSubscriptions);
       assert.equal(evidence.growthPct, null);
       assert.equal(decision.limitations.length, 1);
-      assert.match(decision.limitations[0], /partial/);
+      assert.match(decision.limitations[0], /full-week figure .* not yet available/);
       assert.ok(decision.nextAction.length > 0);
 
       const list = await listCases(deps);

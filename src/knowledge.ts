@@ -1,11 +1,11 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { ROOT } from './database.ts';
+import { DATA_DIR } from './database.ts';
 
 export interface Document { id: string; source: string; text: string }
 
 export async function retrieveKnowledge(brandId: string): Promise<Document[]> {
-  const dir = path.join(ROOT, 'data', 'knowledge');
+  const dir = path.join(DATA_DIR, 'knowledge');
   const results: Document[] = [];
   for (const name of (await readdir(dir)).sort()) {
     const text = await readFile(path.join(dir, name), 'utf8');

@@ -214,7 +214,7 @@ export async function saveDecision(deps: ReviewDeps, brandId: string, marketplac
   }
   const nextAction = (typeof input.nextAction === 'string' && input.nextAction.trim()) || item.outcome.nextAction;
   if (nextAction.length > MAX_TEXT) throw new ReviewError('invalid_input', 400, `Keep the next action under ${MAX_TEXT} characters.`);
-  const limitations = item.quality.checks.filter(check => check.blocking && !check.passed).map(check => check.detail);
+  const limitations = item.quality.checks.filter(check => check.blocking && !check.passed).map(check => check.clientNote ?? check.detail);
   const snapshot: DecisionSnapshot = { evidence: item.evidence, quality: item.quality, outcome: item.outcome };
 
   await deps.store.transaction(async tx => {

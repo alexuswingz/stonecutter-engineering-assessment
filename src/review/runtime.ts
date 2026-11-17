@@ -1,7 +1,6 @@
 import type { PGlite } from '@electric-sql/pglite';
 import { stat } from 'node:fs/promises';
-import path from 'node:path';
-import { ROOT, openDatabase } from '../database.ts';
+import { SNAPSHOT_FILE, openDatabase } from '../database.ts';
 import { loadExports } from '../exports.ts';
 import { ReviewError, type ReviewDeps } from './service.ts';
 import { openReviewStore } from './store.ts';
@@ -21,12 +20,10 @@ interface Runtime {
 const holder = globalThis as typeof globalThis & { __stonecutterReview?: Runtime };
 const runtime = (holder.__stonecutterReview ??= {});
 
-const SNAPSHOT = path.join(ROOT, 'data', 'marketplace.pglite');
-
 async function sourceDatabase(): Promise<PGlite> {
   let stamp: string;
-  try { const info = await stat(SNAPSHOT); stamp = `${info.mtimeMs}:${info.size}`; }
-  catch { throw new ReviewError('source_unavailable', 503, `The source database snapshot was not found at ${SNAPSHOT}. Run the server from the project directory.`); }
+  try { const info = await stat(SNAPSHOT_FILE); stamp = `${info.mtimeMs}:${info.size}`; }
+  catch { throw new ReviewError('source_unavailable', 503, `The source database snapshot was not found at ${SNAPSHOT_FILE}. Run the server from the project directory.`); }
   if (runtime.source?.stamp !== stamp) {
     const previous = runtime.source?.db;
     const db = openDatabase(true);
