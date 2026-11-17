@@ -84,9 +84,10 @@ prints 8,400 as a snapshot through 2 Oct, "not comparable", "insufficient", hold
 - **Controls:** the expansion option is disabled with its reasons listed; the save button names the
   action; a missing reason is flagged inline. Changing case in the switcher shows which case is
   loading and never the previous case's data.
-- **States:** loading text says what is being checked; errors show the server's message, its
-  details and a retry or a route back; an unknown scope lists valid ones; the report page explains
-  "no decision yet" and "withheld" and links to the case.
+- **States:** loading text says what is being checked; an empty dataset says which file to check;
+  errors show the server's message, its details and a retry or a route back; an unknown scope
+  lists valid ones; the report page explains "no decision yet" and "withheld" and links to the
+  case. Where evidence is insufficient, the outcome says so and names the next action.
 
 ## Architecture
 
@@ -109,6 +110,18 @@ React client (app/components)  ->  route handlers (app/api/cases/...)  ->  src/r
 - **Validation boundaries.** The service recomputes evidence on every call. It rejects malformed
   input (400), a decision quoting stale evidence (409), an unsupported expansion or any percentage
   other than 10 (422), and a report request with no decision or stale evidence (409).
+
+## Checks behind the claims
+
+| Claim | Check |
+|---|---|
+| One report per week, and it is the publisher's current one | `tests/selection.test.ts` (all three failed on the starter) |
+| Before/after for Cedar & Coast; every scope judged; healthy control | `tests/analyst.test.ts` |
+| A note cannot make the model override policy | `tests/analyst.test.ts`, "an operational note cannot…" |
+| A saved decision survives a restart and reopens | `tests/review.test.ts`, "a saved decision survives a restart…"; step 5 |
+| Unsupported approvals are rejected in the backend | `tests/review.test.ts`, "the backend rejects an expansion…"; the `curl` above |
+| Changed evidence flags the case and withholds its report | `tests/review.test.ts`, "when evidence changes…"; step 6 |
+| Gate rules: partial week, truncated import, stale import, zero baseline | `tests/test_reconciliation.py` |
 
 ## Limitations and tradeoffs
 
