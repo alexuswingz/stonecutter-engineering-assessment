@@ -1,9 +1,9 @@
 import { PGlite } from '@electric-sql/pglite';
 import { readFile, mkdir, stat } from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
-export const ROOT = fileURLToPath(new URL('../', import.meta.url));
+// Project root. Commands run from the project directory; a bundler may relocate this module, so do not derive it from import.meta.url.
+export const ROOT = process.env.ASSESSMENT_ROOT ?? process.cwd();
 export const AS_OF = '2026-10-06T12:00:00Z';
 export const PERIOD_START = '2026-09-28';
 export const PERIOD_END = '2026-10-04';

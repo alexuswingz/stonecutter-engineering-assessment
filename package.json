@@ -7,6 +7,9 @@
     "node": ">=22"
   },
   "scripts": {
+    "dev": "next dev -p 3210",
+    "build": "next build",
+    "start": "next start -p 3210",
     "demo": "node --import tsx main.ts report --brand cedar-coast",
     "report": "node --import tsx main.ts report",
     "query": "node --import tsx main.ts query",
@@ -18,10 +21,15 @@
     "setup": "node --import tsx scripts/python.ts setup"
   },
   "dependencies": {
-    "@electric-sql/pglite": "0.5.9"
+    "@electric-sql/pglite": "0.5.9",
+    "next": "16.4.6",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
   },
   "devDependencies": {
     "@types/node": "22.19.15",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
     "tsx": "4.23.15",
     "typescript": "5.9.3"
   }
