@@ -47,26 +47,32 @@ export function validateProposal(proposal: Recommendation, outcome: PolicyOutcom
   return { accepted, notes };
 }
 
-/** Client-facing wording built only from verified figures and the authorized outcome. */
-export function policyNarrative(evidence: Evidence, quality: Quality, outcome: PolicyOutcome): string {
+/** The supported result in one or two sentences, from verified figures only. */
+export function resultSentence(evidence: Evidence): string {
   const week = formatRange(evidence.periodStart, evidence.expectedPeriodEnd);
   const now = evidence.activeSubscriptions, before = evidence.previousSubscriptions, growth = evidence.growthPct;
-  let result: string;
-  if (now === null) {
-    result = `A verified subscription figure for ${week} is not available yet.`;
-  } else if (!evidence.current.complete) {
+  if (now === null) return `A verified subscription figure for ${week} is not available yet.`;
+  if (!evidence.current.complete) {
     const through = evidence.current.verifiedThrough;
-    result = `The latest snapshot shows ${formatCount(now)} active subscriptions${through ? ` through ${formatDay(through)}` : ''}. The publisher has not yet issued a complete report for ${week}, so a week-over-week comparison is not available.`;
-  } else if (growth === null) {
-    result = `Active subscriptions were ${formatCount(now)} for ${week}. A comparable figure for the week before is not available, so no growth rate is stated.`;
-  } else {
-    const movement = growth === 0 ? 'unchanged from' : `${growth > 0 ? 'up' : 'down'} ${Math.abs(growth).toFixed(2)}% from`;
-    result = `Active subscriptions were ${formatCount(now)} for ${week}, ${movement} ${formatCount(before)} the week before.`;
+    return `The latest snapshot shows ${formatCount(now)} active subscriptions${through ? ` through ${formatDay(through)}` : ''}. The publisher has not yet issued a complete report for ${week}, so a week-over-week comparison is not available.`;
   }
-  if (outcome.expansionSupported) {
-    return `${result} This supports a suggested ${outcome.budgetChangePct}% expansion of the subscription promotion, subject to brand manager approval.`;
+  if (growth === null) return `Active subscriptions were ${formatCount(now)} for ${week}. A comparable figure for the week before is not available, so no growth rate is stated.`;
+  const movement = growth === 0 ? 'unchanged from' : `${growth > 0 ? 'up' : 'down'} ${Math.abs(growth).toFixed(2)}% from`;
+  return `Active subscriptions were ${formatCount(now)} for ${week}, ${movement} ${formatCount(before)} the week before.`;
+}
+
+/** Wording for a chosen action. `action` may be a reviewer's hold even where an expansion was supported. */
+export function actionSentence(evidence: Evidence, quality: Quality, outcome: PolicyOutcome, action = outcome.action): string {
+  if (action === 'expand_promotion') {
+    return `This supports a suggested ${EXPANSION_PCT}% expansion of the subscription promotion, subject to brand manager approval.`;
   }
+  if (outcome.expansionSupported) return 'The subscription promotion stays at its current level for now.';
   const why = quality.status !== 'ready' ? 'until the underlying data is complete and reconciled'
-    : growth !== null ? `because growth is below the ${GROWTH_THRESHOLD_PCT}% threshold for an expansion` : 'until a comparable figure is available';
-  return `${result} We recommend holding the subscription promotion at its current level ${why}.`;
+    : evidence.growthPct !== null ? `because growth is below the ${GROWTH_THRESHOLD_PCT}% threshold for an expansion` : 'until a comparable figure is available';
+  return `We recommend holding the subscription promotion at its current level ${why}.`;
+}
+
+/** Client-facing wording built only from verified figures and the authorized outcome. */
+export function policyNarrative(evidence: Evidence, quality: Quality, outcome: PolicyOutcome): string {
+  return `${resultSentence(evidence)} ${actionSentence(evidence, quality, outcome)}`;
 }
