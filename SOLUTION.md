@@ -136,6 +136,10 @@ React client (app/components)  ->  route handlers (app/api/cases/...)  ->  src/r
 - **Environment.** Built and verified on Windows 10 with Node 26.13 and Python 3.15. Not run on
   Node 22/24 or macOS.
 
-AI assistance (Claude Code) was used throughout, as the brief allows.
+AI assistance (Claude Code) was used throughout, as the brief allows. The walkthrough video is a
+scripted run of the production build (real clicks, real server restart) with a text-to-speech
+voice reading the narration.
 
-**Actual time spent:** _to be filled in before submitting._
+**Actual time spent:** about 1 hour 50 minutes, measured from file and commit timestamps as one
+continuous sitting. Reading and investigation took about 15 minutes, building and testing 40,
+recording the walkthrough about 20, and submission checks, narration and notes about 35.
