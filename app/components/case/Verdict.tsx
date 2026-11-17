@@ -24,7 +24,13 @@ export function Verdict({ review }: { review: CaseReview }) {
   return (
     <section className={`banner ${tone}`} aria-label="Review outcome">
       <h2>{title}</h2>
-      {pipelineWrong && pipeline && (
+      {pipelineWrong && pipeline && pipeline.activeSubscriptions === evidence.activeSubscriptions && (
+        <p>
+          The pipeline reported week-over-week growth of <strong className="num">{formatPct(evidence.pipelineGrowthPct)}</strong> because
+          its comparison-week figure is wrong. The publisher&apos;s records support <strong className="num">{formatPct(evidence.growthPct)}</strong>.
+        </p>
+      )}
+      {pipelineWrong && pipeline && pipeline.activeSubscriptions !== evidence.activeSubscriptions && (
         <p>
           The pipeline reported <strong className="num">{formatCount(pipeline.activeSubscriptions)}</strong>
           {evidence.pipelineGrowthPct !== null && evidence.pipelineGrowthPct !== undefined && <> ({formatPct(evidence.pipelineGrowthPct)})</>}.

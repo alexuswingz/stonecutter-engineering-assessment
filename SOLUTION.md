@@ -122,7 +122,6 @@ React client (app/components)  ->  route handlers (app/api/cases/...)  ->  src/r
 - **Single process.** The store has one connection; two servers on one store are not supported.
 - **Environment.** Built and verified on Windows 10 with Node 26.13 and Python 3.15. Not run on
   Node 22/24 or macOS.
-- **Raw error text.** An unexpected server failure shows the underlying message unfiltered.
 
 AI assistance (Claude Code) was used throughout, as the brief allows.
 

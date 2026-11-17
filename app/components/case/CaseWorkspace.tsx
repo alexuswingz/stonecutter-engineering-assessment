@@ -30,6 +30,7 @@ function CaseSwitcher({ brandId, marketplace, version }: { brandId: string; mark
     <label className="row small muted">
       <span>Case</span>
       <select value={value} disabled={!cases} onChange={event => { const [brand, market] = event.target.value.split('/'); router.push(casePath(brand, market)); }}>
+        {cases && !cases.some(item => `${item.brandId}/${item.marketplace}` === value) && <option value={value} disabled>Choose a case…</option>}
         {cases
           ? cases.map(item => <option key={`${item.brandId}/${item.marketplace}`} value={`${item.brandId}/${item.marketplace}`}>{item.brandName} · {item.marketplace} ({STATUS_TEXT[item.caseStatus]})</option>)
           : <option value={value}>{list.status === 'loading' ? 'Loading cases…' : 'Case list unavailable'}</option>}

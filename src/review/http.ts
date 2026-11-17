@@ -13,8 +13,9 @@ export async function respond(work: (deps: ReviewDeps) => Promise<unknown>, stat
       return Response.json(body, { status: error.status });
     }
     console.error('[review] request failed', error);
-    const message = error instanceof Error ? error.message : 'Unexpected error.';
-    const body: ApiError = { error: { code: 'internal_error', message: `The review service could not complete the request: ${message}`, details: [] } };
+    // Full detail goes to the server log; the reviewer gets the cause in one line and a way forward.
+    const cause = (error instanceof Error ? error.message : 'Unexpected error.').split('\n')[0].slice(0, 240);
+    const body: ApiError = { error: { code: 'internal_error', message: 'The review service could not complete the request. Nothing was saved. Try again; if it keeps failing, check the server log.', details: [cause] } };
     return Response.json(body, { status: 500 });
   }
 }
