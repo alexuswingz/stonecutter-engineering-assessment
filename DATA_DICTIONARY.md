@@ -27,8 +27,13 @@ A week starts Monday and ends Sunday. A report is a snapshot, not an increment.
 Publishers can issue several reports for the same week. Reports marked `complete` cover
 the full week; `partial` reports cover through their `period_end`. Within a scope, a complete
 report takes precedence over partial reports. Within the same status, the greatest
-`period_end` takes precedence, then greatest `revision`. Only reports extracted by the
-evaluation timestamp are available for the report being prepared.
+`period_end` takes precedence, then the report the publisher generated last (`generated_at`),
+which is the one the publisher export lists with a blank `superseded_by`. `revision` is our
+import sequence, not the publisher's order: a late re-import of a superseded report gets a higher
+revision, so revision only breaks ties between imports of the same publisher report. (This
+paragraph previously said "then greatest `revision`"; the publisher exports contradict that.)
+Exactly one report is selected per week; reports are never added together. Only reports extracted
+by the evaluation timestamp are available for the report being prepared.
 
 Each report is a self-contained set of offers. Within the selected report, distinct
 `offer_id` values are additive, including offers for the same ASIN or with equal counts.

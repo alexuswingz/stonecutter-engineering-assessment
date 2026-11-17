@@ -62,6 +62,12 @@ production platform. Focused partial work is welcome; explain what works and wha
   is not required. Your submitted workflow must run locally without paid services,
   external API keys, a cloud account or deployment.
 
+## Review application
+
+The submitted solution adds a React + TypeScript review application (Next.js App Router) on top of
+this CLI. Run `npm run dev` and open http://localhost:3210. See [SOLUTION.md](SOLUTION.md) for the
+workflow, architecture and verification steps.
+
 ## Quick start
 
 Prerequisites: **Node.js 22 or 24 LTS**, npm, **Python 3.11+** (with venv/pip), and internet access for the initial dependency
