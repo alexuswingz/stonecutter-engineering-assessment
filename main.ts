@@ -33,11 +33,17 @@ async function main(): Promise<void> {
     if (args.includes('--json')) console.log(JSON.stringify(result, null, 2));
     else {
       const e = result.evidence;
+      const count = (value: number | null) => value?.toLocaleString('en-US') ?? 'unavailable';
+      const coverage = e.current.complete ? '' : ` (snapshot through ${e.current.verifiedThrough ?? 'unknown'}, incomplete week)`;
       console.log(`\n${e.brandName} | ${e.marketplace} | ${e.periodStart} to ${e.expectedPeriodEnd}`);
-      console.log(`Active subscriptions: ${e.activeSubscriptions?.toLocaleString('en-US') ?? 'unavailable'} | Previous: ${e.previousSubscriptions?.toLocaleString('en-US') ?? 'unavailable'}`);
-      console.log(`Change: ${e.growthPct ?? 'unavailable'}% | Data quality: ${result.quality.status}`);
+      console.log(`Active subscriptions: ${count(e.activeSubscriptions)}${coverage} | Previous: ${count(e.previousSubscriptions)}`);
+      console.log(`Change: ${e.growthPct === null ? 'not comparable' : `${e.growthPct}%`} | Data quality: ${result.quality.status}`);
+      for (const check of result.quality.checks.filter(item => !item.passed)) {
+        console.log(`  ${check.blocking ? 'BLOCKING' : 'NOTE'} [${check.week}] ${check.title}: ${check.detail}`);
+      }
       console.log(`Net sales: $${e.netSales.toFixed(2)} | Attributed ROAS: ${e.roas ?? 'unavailable'} | Inventory units: ${e.inventoryUnits}`);
-      console.log(`\n${result.recommendation.narrative}\n`);
+      console.log(`\n${result.recommendation.narrative}`);
+      console.log(`Model check: ${result.trace.validation.join(' ')}\n`);
       if (args.includes('--trace')) console.log(JSON.stringify({ ...result.trace, selectionSql: await readFile(path.join(ROOT, 'sql/select-reports.sql'), 'utf8') }, null, 2));
     }
   } finally { await db.close(); }
